@@ -149,8 +149,8 @@ check_task:
     folder: ./upload-arm64
     fingerprint_key: amd64
   test_script: |
-    curl 
-    ls -lh upload*
+    curl -LO "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
+    ls -lh *
 
 release_task:
   only_if: false
@@ -170,27 +170,21 @@ release_task:
   release_script: |
     set +o verbose
     mkdir -p upload-amd64 upload-arm64
-    if [ ! -f ./upload-amd64/rootfs-amd64.tar.gz ]; then
-    fi
-    if [ ! -f ./upload-arm64/rootfs-arm64.tar.gz ]; then
-    fi
-    if [ $NO_INTEL == "1" && $NO_ARM == "1"]; then
-      echo "Nothing to do."
-    fi
+    mv upload-amd64/* upload-arm64/* .
 
     HTTP_PREFIX="$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download"
     if [ ! -f ./upload-amd64/rootfs-amd64.tar.gz  ]; then
       NO_INTEL=1
       FETCH1="$HTTP_PREFIX/rootfs-amd64.tar.xz"
       FETCH2="$HTTP_PREFIX/latest-amd64"
-      echo "none\n" >> ./upload-amd64/changes-amd64
+      echo "none\n" >> ./changes-amd64
     fi
 
     if [ ! -f ./upload-amd64/rootfs-arm64.tar.gz  ]; then
       NO_ARM=1
       FETCH1="$HTTP_PREFIX/rootfs-arm64.tar.xz"
       FETCH2="$HTTP_PREFIX/latest-arm64"
-      echo "none\n" >> ./upload-arm64/changes-arm64
+      echo "none\n" >> ./changes-arm64
     fi
 
     if [ $NO_INTEL == "1" && $NO_ARM == "1"]; then
@@ -200,11 +194,11 @@ release_task:
     test -z $FETCH1 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH1"
     test -z $FETCH2 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH2"
     
-    echo "amd64 changes:\n "
-    cat ./upload-amd64/changes-amd64 
+    echo "amd64 changes:\n " >> changes
+    cat ./changes-amd64 >> changes
 
-    echo "arm64 changes:\n "
-    cat ./upload-amd64/changes-arm64 
+    echo "arm64 changes:\n " >> changes
+    cat ./changes-arm64 >> changes
     
     git fetch --tags
     set +o pipefail
@@ -216,7 +210,8 @@ release_task:
     NEXT_RELEASE="v${IMAGE_TAG}.0.$((NEXT_RELEASE+1))"
     echo $NEXT_RELEASE > version
     echo "Releasing $NEXT_RELEASE"
+    sha256sum rootfs*.tar.xz > shasums
     set -o verbose
     gh release create $NEXT_RELEASE -t $NEXT_RELEASE -d -F changes
-    gh release upload $NEXT_RELEASE lastimage rootfs.tar.xz shasums version
+    gh release upload $NEXT_RELEASE lastimage* rootfs*.tar.xz shasums version
     gh release edit $NEXT_RELEASE --draft=false
