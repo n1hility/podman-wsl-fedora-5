@@ -31,7 +31,7 @@ build_task:
   setup_script: |
     dnf install 'dnf-command(config-manager)'
     dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-    dnf -y install gh git podman golang
+    dnf -y install git podman golang
   get_script: |
     set +o verbose
     date >> changes
@@ -123,6 +123,8 @@ release_task:
   intel_cache:
     folder: ./upload-amd64
     fingerprint_key: upload-amd64
+  setup_script: |
+    dnf -y gh git
   release_script: |
     set +o verbose
     mkdir -p upload-amd64 upload-arm64
