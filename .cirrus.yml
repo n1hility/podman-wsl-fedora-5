@@ -11,7 +11,7 @@ aws_credentials: ENCRYPTED[1625a7241b4d8c8b56fab6419ba3cd6969f44c854568d12166cb9
 
 build_task:
   alias: 'build'
-  only_if: false # $CIRRUS_BRANCH == 'main' && $CIRRUS_PR == "" && $CIRRUS_TAG == ""
+  only_if: $CIRRUS_BRANCH == 'main' && $CIRRUS_PR == "" && $CIRRUS_TAG == ""
   # execution_lock: podman-wsl-fedora-arm-serial
   auto_cancellation: true
   env:
@@ -107,36 +107,12 @@ build_task:
     mkdir upload
     mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" upload
     tar cvzf upload.tar.gz upload
-    curl -s -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
-
-
-build_task:
-  alias: 'build2'
-  only_if:  $CIRRUS_BRANCH == 'main' && $CIRRUS_PR == "" && $CIRRUS_TAG == ""
-  # execution_lock: podman-wsl-fedora-arm-serial
-  auto_cancellation: true
-  env:
-    matrix:
-      - BUILD_ARCH: "arm64"
-        USE_AMI: $FEDORA_AARCH64_AMI
-        USE_TYPE: "t4g.large"
-      - BUILD_ARCH: "amd64"
-        USE_AMI: $FEDORA_AMI
-        USE_TYPE: "t3.large"
-    LAST_IMAGE_FILE: latest-$BUILD_ARCH
-  name: "build-$BUILD_ARCH"
-  ec2_instance:
-    image: $USE_AMI
-    type: $USE_TYPE
-    region: us-east-1
-    architecture: $BUILD_ARCH
-  setup_script: |
-    tar cvzf upload.tar.gz .cirr*
     curl -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
 
-check_task:
+
+release_task:
   depends_on:
-    - build2
+    - build
   ec2_instance:
     image: $FEDORA_AMI
     type: t3.large
@@ -148,28 +124,6 @@ check_task:
   intel_cache:
     folder: ./upload-amd64
     fingerprint_key: upload-amd64
-  test_script: |
-    export BUILD_ARCH=amd64
-    curl -LO "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
-    export BUILD_ARCH=arm64
-    curl -LO "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
-    ls -lh *
-
-release_task:
-  only_if: false
-  depends_on:
-    - build
-  ec2_instance:
-    image: $FEDORA_AMI
-    type: t3.large
-    region: us-east-1
-    architecture: amd64
-  intel_cache:
-    folder: ./upload-amd64
-    fingerprint_key: amd64
-  arm_cache:
-    folder: ./upload-arm64
-    fingerprint_key: arm64
   release_script: |
     set +o verbose
     mkdir -p upload-amd64 upload-arm64
