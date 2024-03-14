@@ -101,6 +101,8 @@ build_task:
     mv changes "changes-$BUILD_ARCH"
     mv rootfs.tar.xz "rootfs-$BUILD_ARCH.tar.xz"
     ls -lh rootfs*.tar.xz
+    echo Latest
+    cat $LAST_IMAGE_FILE
     tar cvf upload.tar rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE"
     curl -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload-$CIRRUS_BUILD_ID-$BUILD_ARCH"
 
@@ -139,6 +141,9 @@ release_task:
       fi
     done
 
+    echo Latest
+    cat $LAST_IMAGE_FILE
+
     if [[ "$NO_INTEL" == "1" && "$NO_ARM" == "1" ]]; then
       echo "Nothing to do."
     fi
@@ -146,7 +151,7 @@ release_task:
     test -z $FETCH1 || $PCURL_RETRY -LO "$FETCH1"
     test -z $FETCH2 || $PCURL_RETRY -LO "$FETCH2"
     
-    STAMP=`date  '+%Y%m%d%H%M%S'`
+    STAMP=`date '+%Y%m%d%H%M%S'`
     NEXT_RELEASE="v${STAMP}"
     echo $NEXT_RELEASE > version
     echo "Releasing $NEXT_RELEASE"
