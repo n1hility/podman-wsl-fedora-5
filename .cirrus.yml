@@ -104,9 +104,7 @@ build_task:
     mv changes "changes-$BUILD_ARCH"
     mv rootfs.tar.xz "rootfs-$BUILD_ARCH.tar.xz"
     ls -lh rootfs*.tar.xz
-    mkdir upload
-    mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" upload
-    tar cvzf upload.tar.gz upload
+    tar czvf upload.tar.gz rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE"
     curl -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
 
 
