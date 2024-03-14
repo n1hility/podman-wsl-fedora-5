@@ -16,13 +16,20 @@ build_task:
   auto_cancellation: true
   env:
     matrix:
-      - BUILD_ARCH: "arm64"
-        USE_AMI: $FEDORA_AARCH64_AMI
-        USE_TYPE: "t4g.large"
-      - BUILD_ARCH: "amd64"
-        USE_AMI: $FEDORA_AMI
-        USE_TYPE: "t3.large"
-    LAST_IMAGE_FILE: latest-$BUILD_ARCH
+      - env:
+          BUILD_ARCH: "arm64"
+          USE_AMI: $FEDORA_AARCH64_AMI
+          USE_TYPE: "t4g.large"
+          LAST_IMAGE_FILE: latest-$BUILD_ARCH
+        arm_cache:
+          folder: ./upload-$BUILD_ARCH
+      - env:
+          BUILD_ARCH: "amd64"
+          USE_AMI: $FEDORA_AMI
+          USE_TYPE: "t3.large"
+          LAST_IMAGE_FILE: latest-$BUILD_ARCH
+        intel_cache:
+          folder: ./upload-$BUILD_ARCH
   name: "build-$BUILD_ARCH"
   ec2_instance:
     image: $USE_AMI
@@ -103,18 +110,23 @@ build_task:
     mv changes "changes-$BUILD_ARCH"
     mv rootfs.tar.xz "rootfs-$BUILD_ARCH.tar.xz"
     ls -lh rootfs*.tar.xz
-    mkdir upload-$BUILD_ARCH
+    mkdir upload
     mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" "upload-$BUILD_ARCH"
-  matrix:
-    - arm_cache:
-        only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
-        folder: ./upload-$BUILD_ARCH
-        type: application/octet-stream
-    - intel_cache:
-        only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
-        folder: ./upload-$BUILD_ARCH
-        type: application/octet-stream
 
+check_task:
+  depends_on:
+    - build
+  ec2_instance:
+    image: $FEDORA_AMI
+    type: t3.large
+    region: us-east-1
+    architecture: amd64
+  intel_cache:
+    folder: ./upload-intel
+  arm_cache:
+    folder: ./upload-arm
+  test_script: |
+    ls -lh upload*
 
 release_task:
   only_if: false
