@@ -131,8 +131,7 @@ build_task:
     region: us-east-1
     architecture: $BUILD_ARCH
   setup_script: |
-    tar cvf upload.tar .cirr*
-    tar cvzf upload.tar.gz upload
+    tar cvzf upload.tar.gz .cirr*
     curl -s -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
 
 check_task:
@@ -201,8 +200,11 @@ release_task:
     test -z $FETCH1 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH1"
     test -z $FETCH2 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH2"
     
-    echo "Intel Cha
+    echo "amd64 changes:\n "
     cat ./upload-amd64/changes-amd64 
+
+    echo "arm64 changes:\n "
+    cat ./upload-amd64/changes-arm64 
     
     git fetch --tags
     set +o pipefail
