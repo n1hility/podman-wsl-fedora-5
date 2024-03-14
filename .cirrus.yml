@@ -126,7 +126,7 @@ release_task:
     HTTP_PREFIX="$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download"
     for arch in amd64 arm64; do
       echo "Fetching build upload for $arch"
-      CACHE_URL = "http://$CIRRUS_HTTP_CACHE_HOST/upload-$CIRRUS_BUILD_ID-$BUILD_ARCH"
+      CACHE_URL="http://$CIRRUS_HTTP_CACHE_HOST/upload-$CIRRUS_BUILD_ID-$BUILD_ARCH"
       $PCURL_RETRY -L -o upload-$arch.tar $CACHE_URL
       tar tvf upload-$arch.tar
       if [ ! -f ./rootfs-$arch.tar.gz ]; then
