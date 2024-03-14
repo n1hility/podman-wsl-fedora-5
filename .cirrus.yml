@@ -132,7 +132,7 @@ build_task:
     architecture: $BUILD_ARCH
   setup_script: |
     tar cvf upload.tar .cirr*
-    curl -s -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
+    curl -s -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH-$BUILD_ARCH"
 
 check_task:
   depends_on:
@@ -142,10 +142,10 @@ check_task:
     type: t3.large
     region: us-east-1
     architecture: amd64
-  upload_cache:
+  upload_amd64_cache:
     folder: ./upload-amd64
     fingerprint_key: amd64
-  upload_cache:
+  upload_arm64_cache:
     folder: ./upload-arm64
     fingerprint_key: arm64
   test_script: |
@@ -168,6 +168,7 @@ release_task:
     fingerprint_key: arm64
   release_script: 
     set +o verbose
+    mkdir -p upload-amd64 upload-arm64
     if [ ! -f ./upload-amd64/rootfs-amd64.tar.gz ]; then
       NO_INTEL=1
     fi
@@ -179,11 +180,15 @@ release_task:
     fi
 
     if [ $NO_INTEL == "1" ]; then
-      FETCH=amd64
+      FETCH=rootfs-amd64.tar.xz
+      touch upload-amd64/changes-amd64
+    elif [ $NO_ARM == "1" ]; then
+      FETCH=rootfs-arm64.tar.xz
+      touch upload-amd64/changes-arm64
     fi
 
+    test -z $FETCH || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download/$FETCH"
     
-       curl --retry 5 --retry-delay 8 --retry-all-errors -L "$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download/"
 
     git fetch --tags
     set +o pipefail
