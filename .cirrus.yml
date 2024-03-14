@@ -23,7 +23,7 @@ build_task:
         USE_AMI: $FEDORA_AMI
         USE_TYPE: "t3.large"
     LAST_IMAGE_FILE: latest-$BUILD_ARCH
-  archive_cache:
+  image_cache:
     folder: ./upload
   name: "build-$BUILD_ARCH"
   ec2_instance:
@@ -116,7 +116,7 @@ check_task:
     type: t3.large
     region: us-east-1
     architecture: amd64
-  archive_cache:
+  image_cache:
     folder: ./upload
   test_script: |
     ls -lh upload*
