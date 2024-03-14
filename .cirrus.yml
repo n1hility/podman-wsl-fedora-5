@@ -5,7 +5,7 @@ env:
   IMAGE_SUFFIX: "c20230816t191118z-f38f37d13"
   FEDORA_AARCH64_AMI: "fedora-podman-aws-arm64-${IMAGE_SUFFIX}"
 
-aws_credentials: ENCRYPTED[3a6925bf4932b111a47f80ffd6018d17ee955ff6d625435b634b17dcd72dabf684162f0c48694ac2db5fc3cd8f153be9]
+aws_credentials: ENCRYPTED[1625a7241b4d8c8b56fab6419ba3cd6969f44c854568d12166cb9a32688784c5cc4570d7e3d9c4f03d143e275a50b819]
 
 build_task:
   alias: 'build'
