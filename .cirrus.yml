@@ -124,7 +124,7 @@ release_task:
   setup_script: |
     dnf install 'dnf-command(config-manager)'
     dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-    dnf -y gh git
+    dnf install -y gh git
   release_script: |
     set +o verbose
     mkdir -p upload-amd64 upload-arm64
