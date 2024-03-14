@@ -130,7 +130,7 @@ release_task:
       echo "Fetching build upload for $arch"
       CACHE_URL="http://$CIRRUS_HTTP_CACHE_HOST/upload-$CIRRUS_BUILD_ID-$arch"
       $PCURL_RETRY -L -o upload-$arch.tar $CACHE_URL
-      if [ ! -f ./upload-$arch.tar.gz ]; then
+      if [ ! -f ./upload-$arch.tar ]; then
         eval NO_${arch}=1
         FETCH1="$HTTP_PREFIX/rootfs-$arch.tar.xz"
         FETCH2="$HTTP_PREFIX/latest-$arch"
