@@ -29,8 +29,6 @@ build_task:
     region: us-east-1
     architecture: $BUILD_ARCH
   setup_script: |
-    dnf install 'dnf-command(config-manager)'
-    dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
     dnf -y install git podman golang
   get_script: |
     set +o verbose
@@ -124,6 +122,8 @@ release_task:
     folder: ./upload-amd64
     fingerprint_key: upload-amd64
   setup_script: |
+    dnf install 'dnf-command(config-manager)'
+    dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
     dnf -y gh git
   release_script: |
     set +o verbose
