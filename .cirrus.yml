@@ -146,14 +146,8 @@ release_task:
     test -z $FETCH1 || $PCURL_RETRY -LO "$FETCH1"
     test -z $FETCH2 || $PCURL_RETRY -LO "$FETCH2"
     
-    git fetch --tags
-    set +o pipefail
-    NEXT_RELEASE=`git tag --list | grep v${IMAGE_TAG} | cut -f3 -d '.' | sort -n | tail -1`
-    re='^[0-9]+$'
-    if ! [[ $NEXT_RELEASE =~ $re ]] ; then
-      NEXT_RELEASE=0
-    fi
-    NEXT_RELEASE="v${IMAGE_TAG}.0.$((NEXT_RELEASE+1))"
+    STAMP=`date  '+%Y%m%d%H%M%S'`
+    NEXT_RELEASE="v${STAMP}"
     echo $NEXT_RELEASE > version
     echo "Releasing $NEXT_RELEASE"
     sha256sum rootfs*.tar.xz > shasums
