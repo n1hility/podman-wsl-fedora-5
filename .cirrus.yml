@@ -132,7 +132,7 @@ build_task:
     architecture: $BUILD_ARCH
   setup_script: |
     tar cvzf upload.tar.gz .cirr*
-    curl -s -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
+    curl -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
 
 check_task:
   depends_on:
@@ -149,9 +149,9 @@ check_task:
     folder: ./upload-arm64
     fingerprint_key: amd64
   test_script: |
-    BUILD_ARCH=amd64
+    export BUILD_ARCH=amd64
     curl -LO "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
-    BUILD_ARCH=arm64
+    export BUILD_ARCH=arm64
     curl -LO "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
     ls -lh *
 
@@ -173,7 +173,6 @@ release_task:
   release_script: |
     set +o verbose
     mkdir -p upload-amd64 upload-arm64
-    mv upload-amd64/* upload-arm64/* .
 
     HTTP_PREFIX="$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download"
     if [ ! -f ./upload-amd64/rootfs-amd64.tar.gz  ]; then
@@ -194,6 +193,7 @@ release_task:
       echo "Nothing to do."
     fi
 
+    mv upload-amd64/* upload-arm64/* .
     test -z $FETCH1 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH1"
     test -z $FETCH2 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH2"
     
