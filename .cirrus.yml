@@ -132,7 +132,7 @@ build_task:
     architecture: $BUILD_ARCH
   setup_script: |
     tar cvzf upload.tar.gz .cirr*
-    curl -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
+    curl -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
 
 check_task:
   depends_on:
@@ -142,12 +142,12 @@ check_task:
     type: t3.large
     region: us-east-1
     architecture: amd64
-  upload_arm64_cache:
+  arm_cache:
     folder: ./upload-arm64
-    fingerprint_key: arm64
-  upload_amd64_cache:
-    folder: ./upload-arm64
-    fingerprint_key: amd64
+    fingerprint_key: upload-arm64
+  intel_cache:
+    folder: ./upload-amd64
+    fingerprint_key: upload-amd64
   test_script: |
     export BUILD_ARCH=amd64
     curl -LO "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
