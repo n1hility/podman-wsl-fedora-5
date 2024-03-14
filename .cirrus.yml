@@ -149,6 +149,9 @@ check_task:
     folder: ./upload-arm64
     fingerprint_key: amd64
   test_script: |
+    BUILD_ARCH=amd64
+    curl -LO "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
+    BUILD_ARCH=arm64
     curl -LO "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
     ls -lh *
 
