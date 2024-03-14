@@ -141,8 +141,10 @@ release_task:
       fi
     done
 
-    echo Latest
-    cat $LAST_IMAGE_FILE
+    echo Latest ARM
+    cat latest-arm64
+    echo Latest AMD
+    cat latest-amd64
 
     if [[ "$NO_INTEL" == "1" && "$NO_ARM" == "1" ]]; then
       echo "Nothing to do."
