@@ -131,7 +131,7 @@ build_task:
     region: us-east-1
     architecture: $BUILD_ARCH
   setup_script: |
-    tar tvf upload.tar .cirr*
+    tar cvf upload.tar .cirr*
     curl -s -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
 
 check_task:
@@ -174,7 +174,15 @@ release_task:
     if [ ! -f ./upload-arm64/rootfs-arm64.tar.gz ]; then
       NO_ARM=1
     fi
+    if [ $NO_INTEL == "1" && $NO_ARM == "1"] ;
+      echo "Nothing to do."
+    fi
 
+    if [ $NO_INTEL == "1" ]; then
+      FETCH=amd64
+    fi
+
+    
        curl --retry 5 --retry-delay 8 --retry-all-errors -L "$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download/"
 
     git fetch --tags
