@@ -16,20 +16,15 @@ build_task:
   auto_cancellation: true
   env:
     matrix:
-      - env:
-          BUILD_ARCH: "arm64"
-          USE_AMI: $FEDORA_AARCH64_AMI
-          USE_TYPE: "t4g.large"
-          LAST_IMAGE_FILE: latest-$BUILD_ARCH
-        arm_cache:
-          folder: ./upload-$BUILD_ARCH
-      - env:
-          BUILD_ARCH: "amd64"
-          USE_AMI: $FEDORA_AMI
-          USE_TYPE: "t3.large"
-          LAST_IMAGE_FILE: latest-$BUILD_ARCH
-        intel_cache:
-          folder: ./upload-$BUILD_ARCH
+      - BUILD_ARCH: "arm64"
+        USE_AMI: $FEDORA_AARCH64_AMI
+        USE_TYPE: "t4g.large"
+      - BUILD_ARCH: "amd64"
+        USE_AMI: $FEDORA_AMI
+        USE_TYPE: "t3.large"
+    LAST_IMAGE_FILE: latest-$BUILD_ARCH
+  archive_cache:
+    folder: ./upload
   name: "build-$BUILD_ARCH"
   ec2_instance:
     image: $USE_AMI
@@ -111,7 +106,7 @@ build_task:
     mv rootfs.tar.xz "rootfs-$BUILD_ARCH.tar.xz"
     ls -lh rootfs*.tar.xz
     mkdir upload
-    mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" "upload-$BUILD_ARCH"
+    mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" upload
 
 check_task:
   depends_on:
@@ -121,10 +116,8 @@ check_task:
     type: t3.large
     region: us-east-1
     architecture: amd64
-  intel_cache:
-    folder: ./upload-intel
-  arm_cache:
-    folder: ./upload-arm
+  archive_cache:
+    folder: ./upload
   test_script: |
     ls -lh upload*
 
