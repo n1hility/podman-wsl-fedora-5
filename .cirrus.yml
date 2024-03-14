@@ -107,13 +107,13 @@ build_task:
     mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" "upload-$BUILD_ARCH"
   matrix:
     - arm_cache:
-      only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
-      folder: ./upload-$BUILD_ARCH
-      type: application/octet-stream
+        only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
+        folder: ./upload-$BUILD_ARCH
+        type: application/octet-stream
     - intel_cache:
-      only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
-      folder: ./upload-$BUILD_ARCH
-      type: application/octet-stream
+        only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
+        folder: ./upload-$BUILD_ARCH
+        type: application/octet-stream
 
 
 release_task:
