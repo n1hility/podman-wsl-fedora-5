@@ -143,7 +143,7 @@ release_task:
       echo "none\n" >> ./changes-arm64
     fi
 
-    if [ $NO_INTEL == "1" && $NO_ARM == "1"]; then
+    if [ "$NO_INTEL" == "1" && "$NO_ARM" == "1"]; then
       echo "Nothing to do."
     fi
 
