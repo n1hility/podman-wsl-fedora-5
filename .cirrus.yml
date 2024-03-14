@@ -23,6 +23,7 @@ build_task:
         USE_AMI: $FEDORA_AMI
         USE_TYPE: "t3.large"
     LAST_IMAGE_FILE: latest-$BUILD_ARCH
+  name: "build-$BUILD_ARCH"
   ec2_instance:
     image: $USE_AMI
     type: $USE_TYPE
@@ -68,7 +69,7 @@ build_task:
     echo "Using clean image"
     podman create --name fedora-update docker.io/library/fedora:$IMAGE_TAG sleep 7200
   update_script: |
-    set +o verbos
+    set +o verbose
     podman start fedora-update
     podman exec fedora-update sh -c 'rpm -qa --qf "%-30{name} %{version}-%{release}\n" | sort' > pre-update
     podman exec -it fedora-update sh -c 'dnf update -y && dnf -y install podman podman-docker procps-ng openssh-server net-tools iproute dhcp-client crun-wasm wasmedge-rt && dnf clean all && rm -rf /var/cache/yum'
