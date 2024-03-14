@@ -136,7 +136,7 @@ release_task:
         FETCH2="$HTTP_PREFIX/latest-$arch"
         echo -e "none\n" >> ./changes
       else
-        tar tvf upload-$arch.tar
+        tar xvf upload-$arch.tar
         cat changes-$arch >> ./changes
       fi
     done
