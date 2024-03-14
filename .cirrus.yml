@@ -96,13 +96,15 @@ build_task:
     podman run -v .:/mnt --security-opt label=disable fedora sh -c 'dnf -y install bsdtar && bsdtar -cf /mnt/new.tar --exclude etc/resolv.conf @/mnt/rootfs.tar'
     mv new.tar rootfs.tar
     mkdir -p etc; touch etc/resolv.conf
-    tar rf "rootfs-$BUILD_ARCH.tar" --mode=644 --group=root --owner=root etc/resolv.conf
+    tar rf rootfs.tar --mode=644 --group=root --owner=root etc/resolv.conf
     echo "Compressing rootfs.tar.."
-    xz --verbose "rootfs-$BUILD_ARCH.tar"
+    xz --verbose rootfs.tar
     echo "Done"
-    ls -l rootfs*.tar.xz
+    mv changes "changes-$BUILD_ARCH"
+    mv rootfs.tar.xz "rootfs-$BUILD_ARCH.tar.xz"
+    ls -lh rootfs*.tar.xz
     mkdir upload-$BUILD_ARCH
-    mv rootfs*.tar.xz "$LAST_IMAGE_FILE" "upload-$BUILD_ARCH"
+    mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" "upload-$BUILD_ARCH"
   arm_cache:
     only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
     folder: ./upload-$BUILD_ARCH
