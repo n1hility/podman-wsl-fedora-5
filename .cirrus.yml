@@ -1,0 +1,21 @@
+env:
+  IMAGE_TAG: 39
+  GITHUB_SERVER_URL: "https://github.com"
+  CIRRUS_SHELL: bash
+  IMAGE_SUFFIX: "c20230816t191118z-f38f37d13"
+  FEDORA_AARCH64_AMI: "fedora-podman-aws-arm64-${IMAGE_SUFFIX}"
+
+aws_credentials: ENCRYPTED[3a6925bf4932b111a47f80ffd6018d17ee955ff6d625435b634b17dcd72dabf684162f0c48694ac2db5fc3cd8f153be9]
+
+build_task:
+  alias: 'build'
+  only_if: $CIRRUS_BRANCH == 'main' && $CIRRUS_PR == "" && $CIRRUS_TAG == ""
+  #execution_lock: podman-wsl-fedora-arm-serial
+  auto_cancellation: true
+  ec2_instance: &standard_build_ec2_aarch64
+    image: ${FEDORA_AARCH64_AMI}
+    type: "t4g.xlarge"
+    region: us-east-1
+    architecture: arm64
+  main_script: |
+    echo "Hello World"
