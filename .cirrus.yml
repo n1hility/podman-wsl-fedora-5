@@ -39,7 +39,7 @@ build_task:
     imageDigest=`podman image inspect docker.io/library/fedora:$IMAGE_TAG --format {{.Digest}}`
     echo $imageDigest > "$LAST_IMAGE_FILE"
     echo "Fetching $GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download/$LAST_IMAGE_FILE"
-    lastImage=`curl --retry 5 --retry-delay 8 --retry-all-errors -L "$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download/$LAST_IMAGE_FILE`
+    lastImage=`curl --retry 5 --retry-delay 8 --retry-all-errors -L "$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download/$LAST_IMAGE_FILE"`
     echo "Digest: $imageDigest"
     echo "Last: $lastImage"
     if [ "$lastImage" != "$imageDigest" ]; then
