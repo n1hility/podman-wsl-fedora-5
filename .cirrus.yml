@@ -132,7 +132,7 @@ build_task:
     architecture: $BUILD_ARCH
   setup_script: |
     tar cvf upload.tar .cirr*
-    curl -s -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH-$BUILD_ARCH"
+    curl -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
 
 check_task:
   depends_on:
@@ -166,30 +166,40 @@ release_task:
   arm_cache:
     folder: ./upload-arm64
     fingerprint_key: arm64
-  release_script: 
+  release_script: |
     set +o verbose
     mkdir -p upload-amd64 upload-arm64
     if [ ! -f ./upload-amd64/rootfs-amd64.tar.gz ]; then
-      NO_INTEL=1
     fi
     if [ ! -f ./upload-arm64/rootfs-arm64.tar.gz ]; then
-      NO_ARM=1
     fi
-    if [ $NO_INTEL == "1" && $NO_ARM == "1"] ;
+    if [ $NO_INTEL == "1" && $NO_ARM == "1"]; then
       echo "Nothing to do."
     fi
 
-    if [ $NO_INTEL == "1" ]; then
-      FETCH=rootfs-amd64.tar.xz
-      touch upload-amd64/changes-amd64
-    elif [ $NO_ARM == "1" ]; then
-      FETCH=rootfs-arm64.tar.xz
-      touch upload-amd64/changes-arm64
+    HTTP_PREFIX="$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download"
+    if [ ! -f ./upload-amd64/rootfs-amd64.tar.gz  ]; then
+      NO_INTEL=1
+      FETCH1="$HTTP_PREFIX/rootfs-amd64.tar.xz"
+      FETCH2="$HTTP_PREFIX/latest-amd64"
+      touch ./upload-amd64/changes-amd64
     fi
 
-    test -z $FETCH || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download/$FETCH"
-    
+    if [ ! -f ./upload-amd64/rootfs-arm64.tar.gz  ]; then
+      NO_ARM=1
+      FETCH1="$HTTP_PREFIX/rootfs-arm64.tar.xz"
+      FETCH2="$HTTP_PREFIX/latest-arm64"
+      touch ./upload-arm64/changes-arm64
+    fi
 
+    if [ $NO_INTEL == "1" && $NO_ARM == "1"]; then
+      echo "Nothing to do."
+    fi
+
+    test -z $FETCH1 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH1"
+    test -z $FETCH2 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH2"
+     
+    
     git fetch --tags
     set +o pipefail
     NEXT_RELEASE=`git tag --list | grep v${IMAGE_TAG} | cut -f3 -d '.' | sort -n | tail -1`
