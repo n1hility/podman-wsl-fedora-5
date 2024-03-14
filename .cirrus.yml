@@ -18,12 +18,14 @@ build_task:
     matrix:
       - BUILD_ARCH: "arm64"
         USE_AMI: $FEDORA_AARCH64_AMI
-      - BUILD_ARCH: "x86_64"
+        USE_TYPE: "t4g.large"
+      - BUILD_ARCH: "amd64"
         USE_AMI: $FEDORA_AMI
+        USE_TYPE: "t3.large"
     LAST_IMAGE_FILE: latest-$BUILD_ARCH
   ec2_instance:
     image: $USE_AMI
-    type: "t4g.xlarge"
+    type: $USE_TYPE
     region: us-east-1
     architecture: $BUILD_ARCH
   setup_script: |
