@@ -105,31 +105,39 @@ build_task:
     ls -lh rootfs*.tar.xz
     mkdir upload-$BUILD_ARCH
     mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" "upload-$BUILD_ARCH"
-  arm_cache:
-    only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
-    folder: ./upload-$BUILD_ARCH
-    type: application/octet-stream
+  matrix:
+    - arm_cache:
+      only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
+      folder: ./upload-$BUILD_ARCH
+      type: application/octet-stream
+    - intel_cache:
+      only_if: $IMAGE_CHANGED == "1" || $PACKAGE_CHANGED == "1"
+      folder: ./upload-$BUILD_ARCH
+      type: application/octet-stream
 
 
-
-
- # release_script: |
- #   set +o verbose
- #   if [ "$IMAGE_CHANGED" != "1" ] && [ "$PACKAGE_CHANGED" != "1" ]; then
- #     echo "Skipping release, no updates required"
- #     exit
- #   fi
- #   git fetch --tags
- #  set +o pipefail
- #  NEXT_RELEASE=`git tag --list | grep v${IMAGE_TAG} | cut -f3 -d '.' | sort -n | tail -1`
- #  re='^[0-9]+$'
- #  if ! [[ $NEXT_RELEASE =~ $re ]] ; then
- #    NEXT_RELEASE=0
- #  fi
- #  NEXT_RELEASE="v${IMAGE_TAG}.0.$((NEXT_RELEASE+1))"
- #  echo $NEXT_RELEASE > version
- #  echo "Releasing $NEXT_RELEASE"
- #  set -o verbose
- #  gh release create $NEXT_RELEASE -t $NEXT_RELEASE -d -F changes
- #  gh release upload $NEXT_RELEASE lastimage rootfs.tar.xz shasums version
- #  gh release edit $NEXT_RELEASE --draft=false
+release_task:
+  only_if: false
+  depends_on:
+    - build
+  ec2_instance:
+    image: $FEDORA_AMI
+    type: t3.large
+    region: us-east-1
+    architecture: amd64
+  release_script: 
+    set +o verbose
+    git fetch --tags
+    set +o pipefail
+    NEXT_RELEASE=`git tag --list | grep v${IMAGE_TAG} | cut -f3 -d '.' | sort -n | tail -1`
+    re='^[0-9]+$'
+    if ! [[ $NEXT_RELEASE =~ $re ]] ; then
+      NEXT_RELEASE=0
+    fi
+   NEXT_RELEASE="v${IMAGE_TAG}.0.$((NEXT_RELEASE+1))"
+   echo $NEXT_RELEASE > version
+   echo "Releasing $NEXT_RELEASE"
+   set -o verbose
+   gh release create $NEXT_RELEASE -t $NEXT_RELEASE -d -F changes
+   gh release upload $NEXT_RELEASE lastimage rootfs.tar.xz shasums version
+   gh release edit $NEXT_RELEASE --draft=false
