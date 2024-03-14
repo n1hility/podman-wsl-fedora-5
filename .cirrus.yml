@@ -119,10 +119,10 @@ check_task:
     architecture: amd64
   intel_cache:
     folder: ./upload-amd64
-    fingerprint-key: amd64
+    fingerprint_key: amd64
   arm_cache:
     folder: ./upload-arm64
-    fingerprint-key: arm64
+    fingerprint_key: arm64
   test_script: |
     ls -lh upload*
 
