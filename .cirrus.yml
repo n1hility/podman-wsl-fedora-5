@@ -11,7 +11,7 @@ aws_credentials: ENCRYPTED[1625a7241b4d8c8b56fab6419ba3cd6969f44c854568d12166cb9
 
 build_task:
   alias: 'build'
-  only_if: $CIRRUS_BRANCH == 'main' && $CIRRUS_PR == "" && $CIRRUS_TAG == ""
+  only_if: false # $CIRRUS_BRANCH == 'main' && $CIRRUS_PR == "" && $CIRRUS_TAG == ""
   # execution_lock: podman-wsl-fedora-arm-serial
   auto_cancellation: true
   env:
@@ -109,18 +109,43 @@ build_task:
     tar cvf upload.tar upload
     curl -s -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
 
+
+build_task:
+  alias: 'build2'
+  only_if:  $CIRRUS_BRANCH == 'main' && $CIRRUS_PR == "" && $CIRRUS_TAG == ""
+  # execution_lock: podman-wsl-fedora-arm-serial
+  auto_cancellation: true
+  env:
+    matrix:
+      - BUILD_ARCH: "arm64"
+        USE_AMI: $FEDORA_AARCH64_AMI
+        USE_TYPE: "t4g.large"
+      - BUILD_ARCH: "amd64"
+        USE_AMI: $FEDORA_AMI
+        USE_TYPE: "t3.large"
+    LAST_IMAGE_FILE: latest-$BUILD_ARCH
+  name: "build-$BUILD_ARCH"
+  ec2_instance:
+    image: $USE_AMI
+    type: $USE_TYPE
+    region: us-east-1
+    architecture: $BUILD_ARCH
+  setup_script: |
+    tar tvf upload.tar .cirr*
+    curl -s -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
+
 check_task:
   depends_on:
-    - build
+    - build2
   ec2_instance:
     image: $FEDORA_AMI
     type: t3.large
     region: us-east-1
     architecture: amd64
-  intel_cache:
+  upload_cache:
     folder: ./upload-amd64
     fingerprint_key: amd64
-  arm_cache:
+  upload_cache:
     folder: ./upload-arm64
     fingerprint_key: arm64
   test_script: |
@@ -135,8 +160,23 @@ release_task:
     type: t3.large
     region: us-east-1
     architecture: amd64
+  intel_cache:
+    folder: ./upload-amd64
+    fingerprint_key: amd64
+  arm_cache:
+    folder: ./upload-arm64
+    fingerprint_key: arm64
   release_script: 
     set +o verbose
+    if [ ! -f ./upload-amd64/rootfs-amd64.tar.gz ]; then
+      NO_INTEL=1
+    fi
+    if [ ! -f ./upload-arm64/rootfs-arm64.tar.gz ]; then
+      NO_ARM=1
+    fi
+
+       curl --retry 5 --retry-delay 8 --retry-all-errors -L "$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download/"
+
     git fetch --tags
     set +o pipefail
     NEXT_RELEASE=`git tag --list | grep v${IMAGE_TAG} | cut -f3 -d '.' | sort -n | tail -1`
@@ -144,10 +184,10 @@ release_task:
     if ! [[ $NEXT_RELEASE =~ $re ]] ; then
       NEXT_RELEASE=0
     fi
-   NEXT_RELEASE="v${IMAGE_TAG}.0.$((NEXT_RELEASE+1))"
-   echo $NEXT_RELEASE > version
-   echo "Releasing $NEXT_RELEASE"
-   set -o verbose
-   gh release create $NEXT_RELEASE -t $NEXT_RELEASE -d -F changes
-   gh release upload $NEXT_RELEASE lastimage rootfs.tar.xz shasums version
-   gh release edit $NEXT_RELEASE --draft=false
+    NEXT_RELEASE="v${IMAGE_TAG}.0.$((NEXT_RELEASE+1))"
+    echo $NEXT_RELEASE > version
+    echo "Releasing $NEXT_RELEASE"
+    set -o verbose
+    gh release create $NEXT_RELEASE -t $NEXT_RELEASE -d -F changes
+    gh release upload $NEXT_RELEASE lastimage rootfs.tar.xz shasums version
+    gh release edit $NEXT_RELEASE --draft=false
