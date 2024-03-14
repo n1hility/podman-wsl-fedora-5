@@ -152,10 +152,10 @@ release_task:
     test -z $FETCH1 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH1"
     test -z $FETCH2 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH2"
     
-    echo "amd64 changes:\n " >> changes
+    echo -e "amd64 changes:\n " >> changes
     cat ./changes-amd64 >> changes
 
-    echo "arm64 changes:\n " >> changes
+    echo -e "arm64 changes:\n " >> changes
     cat ./changes-arm64 >> changes
     
     git fetch --tags
