@@ -131,7 +131,7 @@ release_task:
     for arch in amd64 arm64; do
       echo "Fetching build upload for $arch"
       CACHE_URL="http://$CIRRUS_HTTP_CACHE_HOST/upload-$CIRRUS_BUILD_ID-$arch"
-      $PCURL_RETRY -f -o upload-$arch.tar $CACHE_URL || test "$?" == "22" 
+      curl -Lv -f -o upload-$arch.tar $CACHE_URL || test "$?" == "22" 
       if [ ! -f ./upload-$arch.tar ]; then
         eval NO_${arch}=1
         FETCH1="$HTTP_PREFIX/rootfs-$arch.tar.xz"
