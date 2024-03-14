@@ -8,7 +8,6 @@ env:
 
 
 aws_credentials: ENCRYPTED[1625a7241b4d8c8b56fab6419ba3cd6969f44c854568d12166cb9a32688784c5cc4570d7e3d9c4f03d143e275a50b819]
-
 build_task:
   alias: 'build'
   only_if: $CIRRUS_BRANCH == 'main' && $CIRRUS_PR == "" && $CIRRUS_TAG == ""
@@ -109,6 +108,8 @@ build_task:
 
 
 release_task:
+  env:
+    GH_TOKEN: ENCRYPTED[558a9ae9ed247e83cd7d52591110191bfeafd7dd1ec50b4c65a0ca7d6f2af199a9688afa09155fce825526b19e471479]
   depends_on:
     - build
   ec2_instance:
@@ -141,7 +142,7 @@ release_task:
       echo "none\n" >> ./changes-arm64
     fi
 
-    if [ "$NO_INTEL" == "1" && "$NO_ARM" == "1"]; then
+    if [ "$NO_INTEL" == "1" && "$NO_ARM" == "1" ]; then
       echo "Nothing to do."
     fi
 
