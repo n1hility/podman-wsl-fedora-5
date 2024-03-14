@@ -106,8 +106,8 @@ build_task:
     ls -lh rootfs*.tar.xz
     mkdir upload
     mv rootfs*.tar.xz changes-* "$LAST_IMAGE_FILE" upload
-    tar cvf upload.tar upload
-    curl -s -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
+    tar cvzf upload.tar.gz upload
+    curl -s -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload-$BUILD_ARCH"
 
 
 build_task:
@@ -132,7 +132,8 @@ build_task:
     architecture: $BUILD_ARCH
   setup_script: |
     tar cvf upload.tar .cirr*
-    curl -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
+    tar cvzf upload.tar.gz upload
+    curl -s -X POST --data-binary @upload.tar.gz "http://$CIRRUS_HTTP_CACHE_HOST/upload_$BUILD_ARCH-$BUILD_ARCH"
 
 check_task:
   depends_on:
@@ -142,13 +143,14 @@ check_task:
     type: t3.large
     region: us-east-1
     architecture: amd64
-  upload_amd64_cache:
-    folder: ./upload-amd64
-    fingerprint_key: amd64
   upload_arm64_cache:
     folder: ./upload-arm64
     fingerprint_key: arm64
+  upload_amd64_cache:
+    folder: ./upload-arm64
+    fingerprint_key: amd64
   test_script: |
+    curl 
     ls -lh upload*
 
 release_task:
@@ -182,14 +184,14 @@ release_task:
       NO_INTEL=1
       FETCH1="$HTTP_PREFIX/rootfs-amd64.tar.xz"
       FETCH2="$HTTP_PREFIX/latest-amd64"
-      touch ./upload-amd64/changes-amd64
+      echo "none\n" >> ./upload-amd64/changes-amd64
     fi
 
     if [ ! -f ./upload-amd64/rootfs-arm64.tar.gz  ]; then
       NO_ARM=1
       FETCH1="$HTTP_PREFIX/rootfs-arm64.tar.xz"
       FETCH2="$HTTP_PREFIX/latest-arm64"
-      touch ./upload-arm64/changes-arm64
+      echo "none\n" >> ./upload-arm64/changes-arm64
     fi
 
     if [ $NO_INTEL == "1" && $NO_ARM == "1"]; then
@@ -198,7 +200,9 @@ release_task:
 
     test -z $FETCH1 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH1"
     test -z $FETCH2 || curl --retry 5 --retry-delay 8 --retry-all-errors -LO "$FETCH2"
-     
+    
+    echo "Intel Cha
+    cat ./upload-amd64/changes-amd64 
     
     git fetch --tags
     set +o pipefail
