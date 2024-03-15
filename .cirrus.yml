@@ -105,11 +105,11 @@ build_task:
     xz --verbose rootfs.tar
     echo "Done"
     mv changes "$VER_PFX-changes-$BUILD_ARCH"
-    mv rootfs.tar.xz "$VER_PFX-rootfs-$BUILD_ARCH.tar.xz"
+    mv rootfs.tar.xz "$ROOTFS_FILE"
     ls -lh *rootfs*.tar.xz
     echo Latest
     cat $LAST_IMAGE_FILE
-    tar cvf upload.tar $VER_PFX-rootfs-$BUILD_ARCH.tar.xz $VER_PFX-changes-* "$LAST_IMAGE_FILE"
+    tar cvf upload.tar $ROOTFS_FILE $VER_PFX-changes-* "$LAST_IMAGE_FILE"
     curl -X POST --data-binary @upload.tar "http://$CIRRUS_HTTP_CACHE_HOST/$PCACHE_KEY"
 
 
@@ -150,7 +150,7 @@ release_task:
       fi
     done
 
-    test -z $SHOULD_RELEASE || ( echo "All builds were skipped, Nothing to release."; exit )
+    test -n SHOULD_RELEASE" || ( echo "All builds were skipped, Nothing to release."; exit )
     test -z $FETCH1 || echo "Fetching past artifacts for skipped builds "
     test -z $FETCH1 || $PCURL_RETRY -LO "$FETCH1"
     test -z $FETCH2 || $PCURL_RETRY -LO "$FETCH2"
