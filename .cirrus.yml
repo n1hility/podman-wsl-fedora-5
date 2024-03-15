@@ -33,6 +33,8 @@ build_task:
     env | grep CIRRUS
 
     dnf -y install git podman golang
+  clear_script: |
+    $PCURL_RETRY -v -X "DELETE" "http://$CIRRUS_HTTP_CACHE_HOST/upload-$CIRRUS_BUILD_ID-$BUILD_ARCH"
   get_script: |
     set +o verbose
     date >> changes
