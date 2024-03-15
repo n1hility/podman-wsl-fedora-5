@@ -155,7 +155,7 @@ release_task:
     test -z "$FETCH1" || $PCURL_RETRY -LO "$FETCH1"
     test -z "$FETCH2" || $PCURL_RETRY -LO "$FETCH2"
     
-    STAMP=`date '+%Y%m%d%H%M%S'`
+    STAMP=`date -u '+%Y%m%d%H%M%S'`
     NEXT_RELEASE="v${STAMP}"
     echo $NEXT_RELEASE > version
     echo "Releasing $NEXT_RELEASE"
