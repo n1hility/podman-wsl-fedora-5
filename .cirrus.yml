@@ -18,10 +18,10 @@ build_task:
     matrix:
       - BUILD_ARCH: "arm64"
         USE_AMI: $FEDORA_AARCH64_AMI
-        USE_TYPE: "t4g.large"
+        USE_TYPE: "t4g.xlarge"
       - BUILD_ARCH: "amd64"
         USE_AMI: $FEDORA_AMI
-        USE_TYPE: "t3.large"
+        USE_TYPE: "t3.xlarge"
     LAST_IMAGE_FILE: $VER_PFX-latest-$BUILD_ARCH
     ROOTFS_FILE: $VER_PFX-rootfs-$BUILD_ARCH.tar.zst
     PCACHE_KEY: upload-$VER_PFX-$CIRRUS_BUILD_ID-$BUILD_ARCH
@@ -100,7 +100,7 @@ build_task:
     mkdir -p etc; touch etc/resolv.conf
     tar rf rootfs.tar --mode=644 --group=root --owner=root etc/resolv.conf
     echo "Compressing rootfs.tar.."
-    zstd --ultra -22 --rm --verbose rootfs.tar
+    zstd -T0 --ultra -22 --long --rm --verbose rootfs.tar
     echo "Done"
     mv changes "$VER_PFX-changes-$BUILD_ARCH"
     mv rootfs.tar.zst "$ROOTFS_FILE"
