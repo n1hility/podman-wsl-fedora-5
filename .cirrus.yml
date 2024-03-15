@@ -150,7 +150,7 @@ release_task:
       fi
     done
 
-    if [ -z "$SHOULD_RELEASE" ]; fi 
+    if [ -z "$SHOULD_RELEASE" ]; then 
       echo "All builds were skipped, Nothing to release."
       exit
     fi
