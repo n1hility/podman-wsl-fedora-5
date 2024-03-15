@@ -150,10 +150,10 @@ release_task:
       fi
     done
 
-    test -n SHOULD_RELEASE" || ( echo "All builds were skipped, Nothing to release."; exit )
-    test -z $FETCH1 || echo "Fetching past artifacts for skipped builds "
-    test -z $FETCH1 || $PCURL_RETRY -LO "$FETCH1"
-    test -z $FETCH2 || $PCURL_RETRY -LO "$FETCH2"
+    test -n "$SHOULD_RELEASE" || ( echo "All builds were skipped, Nothing to release."; exit )
+    test -z "$FETCH1" || echo "Fetching past artifacts for skipped builds "
+    test -z "$FETCH1" || $PCURL_RETRY -LO "$FETCH1"
+    test -z "$FETCH2" || $PCURL_RETRY -LO "$FETCH2"
     
     STAMP=`date '+%Y%m%d%H%M%S'`
     NEXT_RELEASE="v${STAMP}"
