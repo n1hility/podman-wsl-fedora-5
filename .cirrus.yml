@@ -150,6 +150,7 @@ release_task:
 
     if [[ "$NO_arm64" == "1" && "$NO_amd64" == "1" ]]; then
       echo "Nothing to do."
+      exit
     fi
 
     test -z $FETCH1 || $PCURL_RETRY -LO "$FETCH1"
