@@ -100,7 +100,7 @@ build_task:
     mkdir -p etc; touch etc/resolv.conf
     tar rf rootfs.tar --mode=644 --group=root --owner=root etc/resolv.conf
     echo "Compressing rootfs.tar.."
-    zstd --ultra --rm --verbose rootfs.tar
+    zstd --ultra -22 --rm --verbose rootfs.tar
     echo "Done"
     mv changes "$VER_PFX-changes-$BUILD_ARCH"
     mv rootfs.tar.zst "$ROOTFS_FILE"
