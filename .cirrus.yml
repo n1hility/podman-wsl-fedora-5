@@ -32,8 +32,6 @@ build_task:
     type: $USE_TYPE
     region: us-east-1
     architecture: $BUILD_ARCH
-  setup_script: |
-    dnf -y install git podman golang
   clear_script: |
     $PCURL_RETRY -v -X "DELETE" "http://$CIRRUS_HTTP_CACHE_HOST/$PCACHE_KEY"
   get_script: |
