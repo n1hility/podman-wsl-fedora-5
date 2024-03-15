@@ -25,7 +25,7 @@ build_task:
     VER_PFX: "5.0"
     LAST_IMAGE_FILE: $VER_PFX-latest-$BUILD_ARCH
     PCACHE_KEY: upload-$VER_PFX-$CIRRUS_BUILD_ID-$BUILD_ARCH
-  name: "build-$BUILD_ARCH"
+  name: "build-$VER_PFX-$BUILD_ARCH"
   ec2_instance:
     image: $USE_AMI
     type: $USE_TYPE
@@ -104,7 +104,7 @@ build_task:
     echo "Compressing rootfs.tar.."
     xz --verbose rootfs.tar
     echo "Done"
-    mv changes "changes-$BUILD_ARCH"
+    mv changes "$VER_PFX-changes-$BUILD_ARCH"
     mv rootfs.tar.xz "$VER_PFX-rootfs-$BUILD_ARCH.tar.xz"
     ls -lh *rootfs*.tar.xz
     echo Latest
@@ -137,6 +137,8 @@ release_task:
       echo "Fetching build upload for $arch"
       CACHE_URL="http://$CIRRUS_HTTP_CACHE_HOST/upload-$VER_PFX-$CIRRUS_BUILD_ID-$arch"
       curl -L -f -o upload-$VER_PFX-$arch.tar $CACHE_URL || test "$?" == "22" 
+      echo    "Fedora - $arch" >> ./changes
+      echo -e "==============\n" >> ./changes
       if [ ! -f ./upload-$VER_PFX-$arch.tar ]; then
         eval NO_${arch}=1
         FETCH1="$HTTP_PREFIX/$VER_PFX-rootfs-$arch.tar.xz"
@@ -144,7 +146,7 @@ release_task:
         echo -e "none\n" >> ./changes
       else
         tar xvf upload-$VER_PFX-$arch.tar
-        cat changes-$arch >> ./changes
+        cat $VER_PFX-changes-$arch >> ./changes
       fi
     done
 
