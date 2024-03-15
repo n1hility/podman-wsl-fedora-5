@@ -30,6 +30,8 @@ build_task:
     region: us-east-1
     architecture: $BUILD_ARCH
   setup_script: |
+    echo $CIRRUS_BUILD_ID
+    echo $CIRRUS_TASK_ID
     dnf -y install git podman golang
   get_script: |
     set +o verbose
@@ -124,6 +126,8 @@ release_task:
     dnf install 'dnf-command(config-manager)'
     dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
     dnf install -y gh git
+    echo $CIRRUS_BUILD_ID
+    echo $CIRRUS_TASK_ID
   release_script: |
     # set +o verbose
 
