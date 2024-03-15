@@ -130,6 +130,7 @@ release_task:
     dnf install -y gh git
   release_script: |
     # set +o verbose
+    VER_PFX=5.0
 
     HTTP_PREFIX="$GITHUB_SERVER_URL/$CIRRUS_REPO_FULL_NAME/releases/latest/download"
     for arch in amd64 arm64; do
