@@ -73,7 +73,6 @@ build_task:
     podman create --name fedora-update docker.io/library/fedora:$IMAGE_TAG sleep 7200
   update_script: |
     set +o verbose
-    exit
     podman start fedora-update
     podman exec -it fedora-update sh -c 'sudo dnf -y copr enable rhcontainerbot/podman-next'
     podman exec fedora-update sh -c 'rpm -qa --qf "%-30{name} %{version}-%{release}\n" | sort' > pre-update
